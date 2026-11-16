@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Banco local (é criado sozinho ao rodar)
+turbo_e_taxa.db
+
+# Sistema
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Executável gerado
+build/
+dist/
+*.spec
