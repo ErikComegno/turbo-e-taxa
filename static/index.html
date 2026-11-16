@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Turbo e Taxa · Calculadora de custo veicular</title>
+  <link rel="icon" href="/static/img/emblema.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600;700&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script>
+    // aplica as preferências de acessibilidade salvas antes de mostrar a página
+    (function () {
+      var p = {};
+      try { p = JSON.parse(localStorage.getItem("turbo-e-taxa:acessibilidade")) || {}; } catch (e) {}
+      var raiz = document.documentElement;
+      if (!p.contraste && window.matchMedia && matchMedia("(prefers-contrast: more)").matches) p.contraste = "alto";
+      if (!p.movimento && window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches) p.movimento = "reduzido";
+      ["tema", "contraste", "texto", "cores", "fonte", "movimento"].forEach(function (k) { if (p[k]) raiz.dataset[k] = p[k]; });
+    })();
+  </script>
+</head>
+<body>
+
+<header class="topo">
+  <div class="topo-conteudo">
+    <a href="#simular" class="marca" data-ir="simular">
+      <img src="/static/img/emblema.png" alt="" width="48" height="57">
+      <span class="marca-nome"><span class="amarelo">TURBO</span> <span class="cinza">e</span> <span class="vermelho">TAXA</span></span>
+    </a>
+    <nav class="menu" aria-label="Menu principal">
+      <button type="button" class="menu-item" data-ir="simular">Simular</button>
+      <button type="button" class="menu-item" data-ir="como">Como calculamos</button>
+      <button type="button" class="menu-item" data-ir="historico">Minhas simulações</button>
+      <button type="button" class="menu-item botao-acessibilidade" id="abrir-acessibilidade" aria-haspopup="dialog">
+        <span data-icone="acessibilidade"></span>Acessibilidade
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ===================== TELA: SIMULAÇÃO ===================== -->
+  <section id="tela-simular" class="tela">
+    <div class="hero">
+      <div class="titulo-pagina">
+        <h1>Combustão, híbrido ou elétrico: qual sai mais barato pra ti?</h1>
+        <p>Escolhe o teu carro (ou o que tu quer comprar). A gente compara com os outros dois tipos, na mesma faixa de preço.</p>
+        <ul class="hero-itens">
+          <li><span data-icone="moeda"></span>Custo por mês e por km</li>
+          <li><span data-icone="calendario"></span>Em quanto tempo se paga</li>
+          <li><span data-icone="grafico"></span>Pra onde vai o dinheiro</li>
+        </ul>
+      </div>
+      <div class="hero-ilustracao" id="hero-ilustracao" aria-hidden="true"></div>
+    </div>
+
+    <form id="form-simulacao" novalidate>
+      <section class="bloco">
+        <div class="bloco-titulo">
+          <span class="passo">1</span>
+          <span class="icone-titulo" data-icone="carro"></span>
+          <h2>Escolhe os carros</h2>
+          <span class="dica">Só um já basta</span>
+        </div>
+        <div class="vagas" id="vagas"></div>
+      </section>
+
+      <div class="linha-blocos">
+        <section class="bloco bloco-largo">
+          <div class="bloco-titulo"><span class="passo">2</span><span class="icone-titulo" data-icone="estrada"></span><h2>Como tu usa o carro</h2></div>
+          <div class="campos-linha">
+            <label class="campo">Quantos km tu roda por mês?
+              <input type="number" id="km_mes" min="1" max="20000" value="1400" inputmode="numeric" required>
+            </label>
+            <label class="campo">Quanto disso é na cidade? (%)
+              <input type="number" id="pct_cidade" min="0" max="100" value="60" inputmode="numeric" required>
+            </label>
+          </div>
+          <fieldset class="grupo-opcoes">
+            <legend>Por quantos anos vai ficar com o carro?</legend>
+            <div class="opcoes" data-campo="anos">
+              <button type="button" class="opcao" data-valor="3">3 anos</button>
+              <button type="button" class="opcao ativa" data-valor="5">5 anos</button>
+              <button type="button" class="opcao" data-valor="8">8 anos</button>
+              <button type="button" class="opcao" data-valor="10">10 anos</button>
+            </div>
+          </fieldset>
+          <fieldset class="grupo-opcoes">
+            <legend>Com que combustível tu abastece?</legend>
+            <div class="opcoes" data-campo="combustivel">
+              <button type="button" class="opcao ativa" data-valor="gasolina">Gasolina</button>
+              <button type="button" class="opcao" data-valor="etanol">Etanol</button>
+            </div>
+          </fieldset>
+          <fieldset class="grupo-opcoes">
+            <legend>Onde tu carregaria um elétrico?</legend>
+            <div class="opcoes" data-campo="recarga">
+              <button type="button" class="opcao ativa" data-valor="casa">Em casa</button>
+              <button type="button" class="opcao" data-valor="trabalho">No trabalho</button>
+              <button type="button" class="opcao" data-valor="publico">Carregador público</button>
+            </div>
+          </fieldset>
+        </section>
+
+        <section class="bloco">
+          <div class="bloco-titulo"><span class="passo">3</span><span class="icone-titulo" data-icone="moeda"></span><h2>Preços na tua região</h2></div>
+          <p class="texto-apoio" id="texto-regiao">Carregando preços…</p>
+          <div class="campos-grade">
+            <label class="campo"><span class="rotulo-icone"><span data-icone="bomba"></span>Gasolina (R$/litro)</span><input type="text" id="preco_gasolina" inputmode="decimal"></label>
+            <label class="campo"><span class="rotulo-icone"><span data-icone="bomba"></span>Etanol (R$/litro)</span><input type="text" id="preco_etanol" inputmode="decimal"></label>
+            <label class="campo"><span class="rotulo-icone"><span data-icone="raio"></span>Energia em casa (R$/kWh)</span><input type="text" id="preco_kwh" inputmode="decimal"></label>
+            <label class="campo"><span class="rotulo-icone"><span data-icone="raio"></span>Carregador público (R$/kWh)</span><input type="text" id="preco_kwh_publico" inputmode="decimal"></label>
+          </div>
+        </section>
+      </div>
+
+      <p class="mensagem-erro" id="erro-form" role="alert" hidden></p>
+
+      <div class="acoes">
+        <span class="texto-apoio">Inclui desvalorização, combustível, manutenção, seguro e IPVA.</span>
+        <button type="submit" class="botao botao-principal" id="botao-comparar">Comparar carros</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ===================== TELA: RESULTADO ===================== -->
+  <section id="tela-resultado" class="tela" hidden>
+    <div class="barra-voltar">
+      <button type="button" class="link-voltar" data-ir="simular">Editar simulação</button>
+      <span class="texto-apoio" id="resumo-uso"></span>
+    </div>
+    <div id="conteudo-resultado"></div>
+
+    <section class="bloco salvar">
+      <h2>Salvar esta simulação</h2>
+      <form id="form-salvar" class="salvar-linha">
+        <label class="campo campo-flex">Nome
+          <input type="text" id="nome_simulacao" maxlength="80" placeholder="Ex: Trocar o Onix em 2027">
+        </label>
+        <button type="submit" class="botao botao-principal">Salvar simulação</button>
+      </form>
+      <p class="mensagem-ok" id="msg-salvar" role="status" hidden></p>
+    </section>
+  </section>
+
+  <!-- ===================== TELA: HISTÓRICO ===================== -->
+  <section id="tela-historico" class="tela" hidden>
+    <div class="titulo-pagina">
+      <h1>Minhas simulações</h1>
+      <p>Simulações que tu salvou. Abre uma para ver o resultado de novo.</p>
+    </div>
+    <div id="lista-historico"></div>
+  </section>
+
+  <!-- ===================== TELA: COMO CALCULAMOS ===================== -->
+  <section id="tela-como" class="tela" hidden>
+    <div class="titulo-pagina">
+      <h1>Como calculamos</h1>
+      <p>O total soma tudo o que tu gasta com o carro no período escolhido, menos o valor que tu recebe ao vender.</p>
+    </div>
+    <div class="bloco texto-longo">
+      <h2 class="titulo-icone"><span data-icone="grafico"></span>Desvalorização</h2>
+      <p>O carro perde uma porcentagem do valor a cada ano. Usamos uma taxa para cada modelo, baseada na Tabela FIPE. A desvalorização é a diferença entre o preço de compra e o valor de revenda no fim do período.</p>
+      <h2 class="titulo-icone"><span data-icone="bomba"></span>Combustível ou energia</h2>
+      <p>Usamos o consumo na cidade e na estrada de cada carro (dados do Inmetro quando disponíveis), a quantidade de km que tu roda e o preço que tu informou. Elétrico carregado em carregador público usa o preço público, que é mais caro.</p>
+      <h2 class="titulo-icone"><span data-icone="ferramenta"></span>Manutenção</h2>
+      <p>Cada carro tem um custo médio de manutenção por ano, para quem roda 15.000 km. Se tu roda mais, o custo sobe na mesma proporção.</p>
+      <h2 class="titulo-icone"><span data-icone="escudo"></span>Seguro</h2>
+      <p>É uma média estimada. O valor real depende da tua idade, do teu CEP e do teu histórico. Faz uma cotação para ter o número certo.</p>
+      <h2 class="titulo-icone"><span data-icone="documento"></span>IPVA</h2>
+      <p>No Paraná, a alíquota em 2026 é de 1,9% do valor do carro. Como o carro desvaloriza, o IPVA também diminui a cada ano.</p>
+      <h2 class="titulo-icone"><span data-icone="calendario"></span>Payback</h2>
+      <p>É o tempo para a economia do dia a dia pagar a diferença de preço entre um carro e o teu. Se o outro carro gasta mais que o teu no dia a dia, ele nunca se paga.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="rodape">
+  <p>Turbo e Taxa · Projeto Integrador · Os valores são estimativas para ajudar na decisão, não uma proposta de venda.</p>
+</footer>
+
+
+<dialog id="painel-acessibilidade" aria-labelledby="titulo-acessibilidade">
+  <div class="painel-topo">
+    <h2 id="titulo-acessibilidade"><span data-icone="acessibilidade"></span>Acessibilidade</h2>
+    <button type="button" class="botao-fechar" id="fechar-acessibilidade" aria-label="Fechar painel de acessibilidade"><span data-icone="fechar"></span></button>
+  </div>
+  <p class="texto-apoio">Ajusta o visual do site do jeito que fica melhor pra ti. As escolhas ficam salvas neste navegador.</p>
+
+  <fieldset class="grupo-opcoes">
+    <legend>Tema</legend>
+    <div class="opcoes" data-a11y="tema">
+      <button type="button" class="opcao" data-valor="">Escuro</button>
+      <button type="button" class="opcao" data-valor="claro">Claro</button>
+    </div>
+  </fieldset>
+  <fieldset class="grupo-opcoes">
+    <legend>Contraste</legend>
+    <div class="opcoes" data-a11y="contraste">
+      <button type="button" class="opcao" data-valor="">Normal</button>
+      <button type="button" class="opcao" data-valor="alto">Alto contraste</button>
+    </div>
+    <p class="texto-apoio">Cores mais fortes, bordas mais grossas e links sublinhados. Bom para baixa visão.</p>
+  </fieldset>
+  <fieldset class="grupo-opcoes">
+    <legend>Tamanho do texto</legend>
+    <div class="opcoes" data-a11y="texto">
+      <button type="button" class="opcao" data-valor="">Normal</button>
+      <button type="button" class="opcao" data-valor="grande">Grande</button>
+      <button type="button" class="opcao" data-valor="muito-grande">Muito grande</button>
+    </div>
+  </fieldset>
+  <fieldset class="grupo-opcoes">
+    <legend>Cores dos carros e gráficos</legend>
+    <div class="opcoes" data-a11y="cores">
+      <button type="button" class="opcao" data-valor="">Padrão</button>
+      <button type="button" class="opcao" data-valor="daltonismo">Para daltonismo</button>
+    </div>
+    <p class="texto-apoio">Troca vermelho e verde por cores fáceis de diferenciar (laranja, amarelo e azul).</p>
+  </fieldset>
+  <fieldset class="grupo-opcoes">
+    <legend>Letra</legend>
+    <div class="opcoes" data-a11y="fonte">
+      <button type="button" class="opcao" data-valor="">Padrão</button>
+      <button type="button" class="opcao" data-valor="facil">Leitura fácil</button>
+    </div>
+    <p class="texto-apoio">Usa a fonte Atkinson Hyperlegible, criada para pessoas com baixa visão.</p>
+  </fieldset>
+  <fieldset class="grupo-opcoes">
+    <legend>Animações</legend>
+    <div class="opcoes" data-a11y="movimento">
+      <button type="button" class="opcao" data-valor="">Ligadas</button>
+      <button type="button" class="opcao" data-valor="reduzido">Desligadas</button>
+    </div>
+  </fieldset>
+
+  <div class="painel-acoes">
+    <button type="button" class="botao botao-secundario" id="restaurar-acessibilidade">Voltar ao padrão</button>
+    <button type="button" class="botao botao-principal" id="concluir-acessibilidade">Pronto</button>
+  </div>
+</dialog>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
