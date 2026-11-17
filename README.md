@@ -18,6 +18,14 @@
 </p>
 
 <p align="center">
+  <a href="https://erikcomegno.github.io/turbo-e-taxa/avaliacao/"><b>▶ Testar online (versão de avaliação)</b></a>
+  ·
+  <a href="#como-rodar-pelo-terminal-passo-a-passo"><b>Rodar localmente</b></a>
+  ·
+  <a href="docs/03-design-ux.md"><b>Design UI/UX</b></a>
+</p>
+
+<p align="center">
   <img src="docs/img/tela-02-resultado.png" alt="Tela de resultado do Turbo e Taxa comparando três carros" width="820">
 </p>
 
@@ -131,6 +139,8 @@ Escolhemos essas tecnologias porque rodam em qualquer computador com Python, sem
 ## Versão de avaliação (sem instalar nada)
 
 O arquivo **`avaliacao/index.html`** tem a calculadora inteira em um único arquivo. É só abrir no navegador (Chrome, Edge ou Firefox): não precisa de Python nem de servidor.
+
+Ela também está publicada no GitHub Pages: **https://erikcomegno.github.io/turbo-e-taxa/avaliacao/**
 
 - As contas são as mesmas do sistema completo (o `calculo.py` foi reescrito em JavaScript no `static/js/local-api.js`).
 - O catálogo de carros e os preços vão junto dentro do arquivo.
